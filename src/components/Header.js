@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { SidebarContext } from '../context/SidebarContext'
 import {
   SearchIcon,
@@ -9,10 +9,15 @@ import {
   OutlinePersonIcon,
   OutlineCogIcon,
   OutlineLogoutIcon,
+  ChatIcon,
 } from '../icons'
-import { Avatar, Badge, Button, Dropdown, DropdownItem, WindmillContext } from '@windmill/react-ui'
+import { Modal, Avatar, ModalBody, ModalHeader, ModalFooter, Input, Label, Button, Dropdown, DropdownItem, WindmillContext } from '@windmill/react-ui'
 import { useAuth } from '../context/AuthContext'
 import { useHistory } from 'react-router-dom'
+import { useCollection } from 'react-firebase-hooks/firestore'
+import firebase from 'firebase'
+import { data } from 'autoprefixer'
+
 
 function Header() {
   const { mode, toggleMode } = useContext(WindmillContext)
@@ -59,8 +64,9 @@ function Header() {
           {/* <!-- Theme toggler --> */}
           <li className="flex">
             <Button onClick={() => history.push('/app/packages')}>
-              <span className="pr-2">+</span> Invest Now
+              <div>Invest Now</div>
             </Button>
+            <ChatBox />
           </li>
           <li className="flex">
             <button
@@ -76,7 +82,7 @@ function Header() {
             </button>
           </li>
           {/* <!-- Notifications menu --> */}
-          
+
           {/* <!-- Profile menu --> */}
           <li className="relative">
             <button
@@ -87,7 +93,7 @@ function Header() {
             >
               <Avatar
                 className="align-middle"
-                src={user ? (user.photoURL) ? user.photoURL : 'https://ui-avatars.com/api/?name='+user.email : ""}
+                src={user ? (user.photoURL) ? user.photoURL : 'https://ui-avatars.com/api/?name=' + user.email : ""}
                 alt=""
                 aria-hidden="true"
               />
@@ -114,3 +120,45 @@ function Header() {
 }
 
 export default Header
+
+
+function ChatBox() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  function openModal() {
+    setIsModalOpen(true)
+  }
+
+  function closeModal() {
+    setIsModalOpen(false)
+  }
+
+  const { user } = useAuth()
+  const [chat, loading, error] = useCollection(firebase.firestore().collection(`uData/${user.uid}/notifications`).orderBy('created', 'desc'), {})
+
+  const addMessages = async (msgs) => {
+    msgs.map(async (doc) => {
+      // await chatCtl.addMessage({
+      //   type: 'text',
+      //   content: doc.title,
+      //   self: (doc.uid == user.uid),
+      // });
+    })
+  }
+
+
+  return <>
+    <Button className="mx-1" onClick={() => openModal()}>
+      <div className="hidden md:block">Live Chat</div>
+      <div className="md:hidden"><ChatIcon className="w-5 h-5" aria-hidden="true" /></div>
+    </Button>
+    <Modal isOpen={isModalOpen} onClose={closeModal}>
+      <ModalBody className>
+        <h1>Hello</h1>
+        <div className="w-full overflow-y-scroll" style={{ height: '65vh' }}>
+
+        </div>
+      </ModalBody>
+    </Modal>
+  </>
+}

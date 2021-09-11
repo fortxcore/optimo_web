@@ -63,7 +63,7 @@ function Refferals() {
                   </>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm font-bold">{doc.data().title}</span><br/>
+                  <span className="text-sm font-bold">{doc.data().title}</span><br />
                   <span className="text-sm overflow-hidden">{doc.data().description}</span>
                 </TableCell>
               </TableRow>
@@ -84,3 +84,4 @@ function Refferals() {
 }
 
 export default Refferals
+
