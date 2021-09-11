@@ -17,6 +17,7 @@ import { useHistory } from 'react-router-dom'
 import { useCollection } from 'react-firebase-hooks/firestore'
 import firebase from 'firebase'
 import { data } from 'autoprefixer'
+import moment from 'moment'
 
 
 function Header() {
@@ -134,31 +135,77 @@ function ChatBox() {
   }
 
   const { user } = useAuth()
-  const [chat, loading, error] = useCollection(firebase.firestore().collection(`uData/${user.uid}/notifications`).orderBy('created', 'desc'), {})
+  const [chat, load, error] = useCollection(firebase.firestore().collection(`uData/${user.uid}/notifications`).orderBy('created'), {})
 
-  const addMessages = async (msgs) => {
-    msgs.map(async (doc) => {
-      // await chatCtl.addMessage({
-      //   type: 'text',
-      //   content: doc.title,
-      //   self: (doc.uid == user.uid),
-      // });
-    })
+
+  const [me, setMe] = useState(null)
+
+  const scrollToBottom = () => {
+    if (me != null) {
+      me.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+  useEffect(() => {
+    scrollToBottom()
+  }, [me])
+
+  const [loading, setLoading] = useState(false)
+  const sendMessage = async () => {
+    setLoading(true)
+    if (message != null) {
+      await firebase.firestore().collection(`uData/${user.uid}/notifications`).add({ title: message, description: message, created: Date.now(), uid: user.uid })
+      scrollToBottom()
+    }
+    setMessage("")
+    setLoading(false)
   }
 
-
+  const [message, setMessage] = useState(null)
   return <>
     <Button className="mx-1" onClick={() => openModal()}>
       <div className="hidden md:block">Live Chat</div>
       <div className="md:hidden"><ChatIcon className="w-5 h-5" aria-hidden="true" /></div>
     </Button>
     <Modal isOpen={isModalOpen} onClose={closeModal}>
-      <ModalBody className>
-        <h1>Hello</h1>
-        <div className="w-full overflow-y-scroll" style={{ height: '65vh' }}>
-
+        <div className='shadow text-white w-min rounded-t-lg  px-2 py-4 bg-blue-700'>
+          <h2>Chat with Optimo Team</h2>
         </div>
-      </ModalBody>
+        <div className="bg-gray-100 w-full overflow-y-scroll" style={{ height: '65vh' }}>
+          <div className="flex flex-col px-2 mt-2 space-y-3 pb-3 ">
+            {chat && chat.docs.map((doc) => {
+              return <>
+                {(doc.data().uid == user.uid) ? <div className="w-max ml-auto break-all mt-2 mb-1 p-2 rounded-lg rounded-br-none bg-blue-500 rounded-2xl text-white text-left mx-3">
+                  <p>{doc.data().title}</p>
+                  <p className="float-right">
+                    <small>
+                      <sub>
+                        {moment(new Date(doc.data().created)).format("DD-MM ")} {moment(new Date(doc.data().created)).format("h:mm a ")}
+                      </sub>
+                    </small>
+                  </p>
+                </div> : <div class=" text-black other break-all mt-2  mx-3 rounded-lg rounded-bl-none float-none bg-gray-300 mr-auto rounded-2xl p-2">
+                  <p>{doc.data().title}</p>
+                  <p className="float-left">
+                    <small>
+                      <sub>
+                        {moment(new Date(doc.data().created)).format("DD-MM ")} {moment(new Date(doc.data().created)).format("h:mm a ")}
+                      </sub>
+                    </small>
+                  </p>
+                </div>}
+              </>
+            })}
+            <div style={{ float: "left", clear: "both" }}
+              ref={(el) => setMe(el)}>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-row">
+          <input value={message} disabled={loading} type="text" placeholder="Enter your message" defaultValue={message} onChange={(e) => setMessage(e.target.value)} class=" flex-1 p-2 text-md rounded-bl-lg outline-none bg-gray-50 focus:bg-white" />
+          <button type="button" class="bg-blue-700 p-2 rounded-br" onClick={() => sendMessage()} disabled={loading}>
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
     </Modal>
   </>
 }
