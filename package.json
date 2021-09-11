@@ -9,7 +9,7 @@
     "prestart": "npm run tailwind:dev",
     "start": "react-scripts start env-cmd -f .env.production",
     "prebuild": "npm run tailwind:build",
-    "build": "react-scripts build",
+    "build": "CI=false && react-scripts build",
     "cz": "git-cz",
     "release": "release-it",
     "test": "react-scripts test",
