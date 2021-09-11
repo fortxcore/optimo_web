@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "optimo-admin-v2",
+    "site": "oi-demo",
     "public": "build",
     "ignore": [
       "firebase.json",
