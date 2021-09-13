@@ -126,8 +126,17 @@ export default Header
 function ChatBox() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  function openModal() {
+  async function openModal() {
     setIsModalOpen(true)
+    if (chat != null) {
+      chat.docs.forEach(async (doc) => {
+        if (!doc.data().isUserSeen) {
+          await firebase.firestore().collection('chatMessages').doc(doc.id).update({
+            isUserSeen:true
+          })
+        }
+      })
+    }
   }
 
   function closeModal() {
@@ -135,7 +144,7 @@ function ChatBox() {
   }
 
   const { user } = useAuth()
-  const [chat, load, error] = useCollection(firebase.firestore().collection(`uData/${user.uid}/notifications`).orderBy('created'), {})
+  const [chat, load, error] = useCollection(firebase.firestore().collection(`chatMessages`).where('uid', '==', user.uid).orderBy('created'), {})
 
 
   const [me, setMe] = useState(null)
@@ -153,59 +162,72 @@ function ChatBox() {
   const sendMessage = async () => {
     setLoading(true)
     if (message != null) {
-      await firebase.firestore().collection(`uData/${user.uid}/notifications`).add({ title: message, description: message, created: Date.now(), uid: user.uid })
+      await firebase.firestore().collection(`chatMessages`).add({ title: message, description: message, created: Date.now(), uid: user.uid, userName: user.displayName, email: user.email, isUserSeen: true, isAdminSeen: false })
       scrollToBottom()
     }
     setMessage("")
     setLoading(false)
   }
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    var c = 0;
+    if (chat != null) {
+      chat.docs.forEach((doc) => {
+        if (!doc.data().isUserSeen) {
+          c += 1
+        }
+      })
+    }
+    setCount(c)
+  }, [chat])
 
   const [message, setMessage] = useState(null)
   return <>
     <Button className="mx-1" onClick={() => openModal()}>
-      <div className="hidden md:block">Live Chat</div>
+      <div className="hidden md:block">Live Chat {count > 0 && `(${count})`}</div>
       <div className="md:hidden"><ChatIcon className="w-5 h-5" aria-hidden="true" /></div>
     </Button>
     <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <div className='shadow text-white w-min rounded-t-lg  px-2 py-4 bg-blue-700'>
-          <h2>Chat with Optimo Team</h2>
-        </div>
-        <div className="bg-gray-100 w-full overflow-y-scroll" style={{ height: '65vh' }}>
-          <div className="flex flex-col px-2 mt-2 space-y-3 pb-3 ">
-            {chat && chat.docs.map((doc) => {
-              return <>
-                {(doc.data().uid == user.uid) ? <div className="w-max ml-auto break-all mt-2 mb-1 p-2 rounded-lg rounded-br-none bg-blue-500 rounded-2xl text-white text-left mx-3">
-                  <p>{doc.data().title}</p>
-                  <p className="float-right">
-                    <small>
-                      <sub>
-                        {moment(new Date(doc.data().created)).format("DD-MM ")} {moment(new Date(doc.data().created)).format("h:mm a ")}
-                      </sub>
-                    </small>
-                  </p>
-                </div> : <div class=" text-black other break-all mt-2  mx-3 rounded-lg rounded-bl-none float-none bg-gray-300 mr-auto rounded-2xl p-2">
-                  <p>{doc.data().title}</p>
-                  <p className="float-left">
-                    <small>
-                      <sub>
-                        {moment(new Date(doc.data().created)).format("DD-MM ")} {moment(new Date(doc.data().created)).format("h:mm a ")}
-                      </sub>
-                    </small>
-                  </p>
-                </div>}
-              </>
-            })}
-            <div style={{ float: "left", clear: "both" }}
-              ref={(el) => setMe(el)}>
-            </div>
+      <div className='shadow text-white w-min rounded-t-lg  px-2 py-4 bg-blue-700'>
+        <h2>Chat with Optimo Team</h2>
+      </div>
+      <div className="bg-gray-100 w-full overflow-y-scroll" style={{ height: '65vh' }}>
+        <div className="flex flex-col px-2 mt-2 space-y-3 pb-3 ">
+          {chat && chat.docs.map((doc) => {
+            return <>
+              {(!doc.data().isAgent) ? <div className=" text-sm w-max ml-auto break-all mt-2 mb-1 p-2 rounded-lg rounded-br-none bg-blue-500 rounded-2xl text-white text-left mx-3">
+                <p>{doc.data().title}</p>
+                <p className="float-right">
+                  <small>
+                    <sub>
+                      {moment(new Date(doc.data().created)).format("DD-MM ")} {moment(new Date(doc.data().created)).format("h:mm a ")}
+                    </sub>
+                  </small>
+                </p>
+              </div> : <div class="text-sm  text-black other break-all mt-2  mx-3 rounded-lg rounded-bl-none float-none bg-gray-300 mr-auto rounded-2xl p-2">
+                <p>{doc.data().title}</p>
+                <p className="float-left">
+                  <small>
+                    <sub>
+                      {moment(new Date(doc.data().created)).format("DD-MM ")} {moment(new Date(doc.data().created)).format("h:mm a ")}
+                    </sub>
+                  </small>
+                </p>
+              </div>}
+            </>
+          })}
+          {chat && chat.empty && <div className="m-16 text-center text-gray-400">Send your first message to us. One of our agent will reply as soon as possible.</div>}
+          <div style={{ float: "left", clear: "both" }}
+            ref={(el) => setMe(el)}>
           </div>
         </div>
-        <div class="flex flex-row">
-          <input value={message} disabled={loading} type="text" placeholder="Enter your message" defaultValue={message} onChange={(e) => setMessage(e.target.value)} class=" flex-1 p-2 text-md rounded-bl-lg outline-none bg-gray-50 focus:bg-white" />
-          <button type="button" class="bg-blue-700 p-2 rounded-br" onClick={() => sendMessage()} disabled={loading}>
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-          </button>
-        </div>
+      </div>
+      <div class="flex flex-row">
+        <input value={message} disabled={loading} type="text" placeholder="Enter your message" defaultValue={message} onChange={(e) => setMessage(e.target.value)} class=" flex-1 p-2 text-md rounded-bl-lg outline-none bg-gray-50 focus:bg-white" />
+        <button type="button" class="bg-blue-700 p-2 rounded-br" onClick={() => sendMessage()} disabled={loading}>
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      </div>
     </Modal>
   </>
 }
