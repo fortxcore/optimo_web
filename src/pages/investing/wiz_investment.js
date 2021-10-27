@@ -94,7 +94,7 @@ function InvestmentDetails() {
                     ? (data.data().invoiceURL != '')
                       ? <div>
                         <div className="my-2 px-4 text-sm text-red-900 py-2 bg-red-50 rounded">
-                          You need to deposit money in order to make your investment package active.
+                          Click on Deposit Now to make your investment package active
                         </div>
 
                       </div>

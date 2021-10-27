@@ -65,21 +65,25 @@ function ProfileSetup({ message = '' }) {
   const handleSubmit = async () => {
     const localStorage = window.localStorage;
     try {
-
-      setMessage('')
-      await updateProfile({
-        'displayName':displayName,
-        'address1': address1??'',
-        'address2': address2 ?? '',
-        'city': city??'',
-        'country': country??'',
-        'phoneNumber': phoneNumber??'',
-        'defaultAddress': walletAddress??'',
-        'defaultCurrency': walletCurrency??'',
-        isprofileUpdated: true,
-      })
-      alert('Account updated.')
-      window.location.href = `https://my.optimoinvest.com/app`; 
+      if (displayName != null && displayName != '' && address1 != null && address1 != '' && city != null && city != '' && country != null && country != '' && phoneNumber != null && phoneNumber != '') {
+        setMessage('')
+        await updateProfile({
+          'displayName': displayName,
+          'address1': address1 ?? '',
+          'address2': address2 ?? '',
+          'city': city ?? '',
+          'country': country ?? '',
+          'phoneNumber': phoneNumber ?? '',
+          'defaultAddress': walletAddress ?? '',
+          'defaultCurrency': walletCurrency ?? '',
+          isprofileUpdated: true,
+        })
+        alert('Account updated.')
+        window.location.href = `https://my.optimoinvest.com/app`;
+      } else {
+        alert('Please fill all the fields.')
+        setMessage('Please fill all the fields.')
+      }
     } catch (error) {
       setMessage(error.message)
       // alert(error.message)

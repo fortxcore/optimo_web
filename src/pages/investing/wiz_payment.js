@@ -58,7 +58,7 @@ function Payment() {
     </Button>
     <div className="p-2 rounded-lg bg-blue-100 text-blue-900 overflow-y-auto text-sm"><p>{user['defaultCurrency']} address : {user['defaultAddress']}</p></div>
     <hr className="my-8" />
-    <p className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-200">or Add New Payment Method</p>
+    <p className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-200">or Use your Crypto Wallet to Deposit</p>
     <Label className="mt-4">
       <span>Wallet Currency </span>
       <Select className="mt-1">

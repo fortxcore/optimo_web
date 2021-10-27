@@ -64,9 +64,6 @@ function Header() {
         <ul className="flex items-center flex-shrink-0 space-x-6">
           {/* <!-- Theme toggler --> */}
           <li className="flex">
-            <Button onClick={() => history.push('/app/packages')}>
-              <div>Invest Now</div>
-            </Button>
             <ChatBox />
           </li>
           <li className="flex">
@@ -183,7 +180,7 @@ function ChatBox() {
 
   const [message, setMessage] = useState(null)
   return <>
-    <Button className="mx-1" onClick={() => openModal()}>
+    <Button style={{backgroundColor:'#C57000'}} className="mx-1" onClick={() => openModal()}>
       <div className="hidden md:block">Live Chat {count > 0 && `(${count})`}</div>
       <div className="md:hidden"><ChatIcon className="w-5 h-5" aria-hidden="true" /></div>
     </Button>

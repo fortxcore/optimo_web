@@ -47,7 +47,7 @@ function SidebarContent() {
         )}
       </ul>
       <div className="px-6 my-6">
-        <Button onClick={()=>history.push('/app/packages')}>
+        <Button style={{backgroundColor:'#309C41'}} onClick={()=>history.push('/app/packages')}>
          <span className="pr-2">+</span> Invest Now
         </Button>
       </div>
